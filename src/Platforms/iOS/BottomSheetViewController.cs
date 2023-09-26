@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Versioning;
+using Foundation;
 using Microsoft.Maui.Platform;
 using UIKit;
 
@@ -8,6 +9,7 @@ public class BottomSheetViewController : UIViewController
 {
     IMauiContext _windowMauiContext;
     BottomSheet _sheet;
+    NSObject? _keyboardDidHideObserver;
 
     public BottomSheetViewController(IMauiContext windowMauiContext, BottomSheet sheet) : base()
     {
@@ -39,7 +41,31 @@ public class BottomSheetViewController : UIViewController
             cv.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor)
         });
 
-        if (_sheet.BackgroundBrush != null)
+        UpdateBackground();
+        _sheet.NotifyShowing();
+
+        if (_keyboardDidHideObserver is null)
+        {
+            _keyboardDidHideObserver = UIKeyboard.Notifications.ObserveDidHide(KeyboardDidHide);
+        }
+    }
+
+    void KeyboardDidHide(object sender, UIKeyboardEventArgs e)
+    {
+        Layout();
+    }
+
+    public void Layout()
+    {
+        _sheet.CachedDetents.Clear();
+        if (OperatingSystem.IsIOSVersionAtLeast(16))
+        {
+            SheetPresentationController.InvalidateDetents();
+        }
+    }
+    internal void UpdateBackground()
+    {
+        if (_sheet?.BackgroundBrush != null)
         {
             Paint paint = _sheet.BackgroundBrush;
             View.BackgroundColor = paint.ToColor().ToPlatform();
@@ -51,15 +77,11 @@ public class BottomSheetViewController : UIViewController
                 View.BackgroundColor = UIColor.SystemBackground;
             }
         }
-        _sheet.NotifyShowing();
     }
     public override void ViewDidLayoutSubviews()
     {
         base.ViewDidLayoutSubviews();
-        if (OperatingSystem.IsIOSVersionAtLeast(16))
-        {
-            SheetPresentationController.InvalidateDetents();
-        }
+        Layout();
     }
 
     [SupportedOSPlatform("ios15.0")]

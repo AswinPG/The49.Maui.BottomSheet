@@ -1,4 +1,4 @@
-﻿using The49.Maui.BottomSheet.Sample. DemoPages;
+﻿using The49.Maui.BottomSheet.Sample.DemoPages;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
@@ -21,6 +21,18 @@ public partial class MainPage : ContentPage
     }
 
     public ObservableCollection<DemoEntry> Demos => new ObservableCollection<DemoEntry> {
+        new DemoEntry
+        {
+            Title = "Chat demo",
+            Description = "Use a sheet for a chat editor",
+            Command = new Command(OpenChat),
+        },
+        new DemoEntry
+        {
+            Title = "Entry",
+            Description = "Display any page as a bottom sheet",
+            Command = new Command(OpenEntrySheet),
+        },
         new DemoEntry
         {
             Title = "Non-modal sheet",
@@ -83,6 +95,12 @@ public partial class MainPage : ContentPage
         },
         new DemoEntry
         {
+            Title = "Text sizing",
+            Description = "Text should take as much space as it needs",
+            Command = new Command(OpenTextSizing),
+        },
+        new DemoEntry
+        {
             Title = "With ScrollView",
             Description = "Let the sheet expand, then scroll",
             Command = new Command(OpenScrollView),
@@ -122,6 +140,12 @@ public partial class MainPage : ContentPage
             Title = "Sizing test",
             Description = "Check that the content is sized to the sheet",
             Command = new Command(OpenSizingTest),
+        },
+        new DemoEntry
+        {
+            Title = "Keyboard layout",
+            Description = "Layout should update with keyboard",
+            Command = new Command(OpenKeyboard),
         },
 #if ANDROID
         new DemoEntry
@@ -196,6 +220,12 @@ public partial class MainPage : ContentPage
         };
         page.ShowAsync(Window);
     }
+    async void OpenEntrySheet()
+    {
+        var sheet = new EntrySheet();
+
+        await sheet.ShowAsync();
+    }
     private void OpenFullscreenSheet()
     {
         var page = new SimplePage();
@@ -236,6 +266,13 @@ public partial class MainPage : ContentPage
             new HeightDetent() { Height = 240 },
         };
         page.ShowAsync(Window);
+    }
+
+    void OpenTextSizing()
+    {
+        var p = new TextSheet();
+
+        p.ShowAsync(Window);
     }
 
     void OpenDismissed()
@@ -317,7 +354,8 @@ public partial class MainPage : ContentPage
             new ContentDetent(),
         };
         page.HasBackdrop = true;
-        var b = new Button {
+        var b = new Button
+        {
             Text = "Go to page"
         };
 
@@ -340,6 +378,23 @@ public partial class MainPage : ContentPage
         var t = new SizingTest();
 
         t.ShowAsync(Window);
+    }
+
+    void OpenKeyboard()
+    {
+        var t = new EntrySheet();
+        t.Detents = new DetentsCollection()
+        {
+            new FullscreenDetent(),
+            new MediumDetent(),
+            new ContentDetent(),
+        };
+        t.ShowAsync(Window);
+    }
+
+    void OpenChat()
+    {
+        Shell.Current.Navigation.PushAsync(new ChatPage());
     }
 
 #if ANDROID

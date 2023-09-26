@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls;
+﻿#nullable enable
 
 namespace The49.Maui.BottomSheet;
 
@@ -22,9 +22,9 @@ public partial class BottomSheet : ContentView
     public static readonly BindableProperty SelectedDetentProperty = BindableProperty.Create(nameof(SelectedDetent), typeof(Detent), typeof(BottomSheet), null, BindingMode.TwoWay);
 
     //public event EventHandler<float> Sliding;
-    public event EventHandler<DismissOrigin> Dismissed;
-    public event EventHandler Showing;
-    public event EventHandler Shown;
+    public event EventHandler<DismissOrigin>? Dismissed;
+    public event EventHandler? Showing;
+    public event EventHandler? Shown;
 
     DismissOrigin _dismissOrigin = DismissOrigin.Gesture;
 
@@ -58,9 +58,9 @@ public partial class BottomSheet : ContentView
         set => SetValue(IsCancelableProperty, value);
     }
 
-    public Detent SelectedDetent
+    public Detent? SelectedDetent
     {
-        get => (Detent)GetValue(SelectedDetentProperty);
+        get => (Detent?)GetValue(SelectedDetentProperty);
         set => SetValue(SelectedDetentProperty, value);
     }
 
@@ -69,26 +69,20 @@ public partial class BottomSheet : ContentView
         Resources.Add(new Style(typeof(Label)));
     }
 
-    double _tallestDetent = -1;
-
-    partial void CalculateTallestDetent(double heightConstraint);
-
-    public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+    public Task ShowAsync(bool animated = true)
     {
-        if (_tallestDetent == -1)
+        var window = Application.Current?.Windows[0];
+        if (window is null)
         {
-            CalculateTallestDetent(heightConstraint);
+            return Task.CompletedTask;
         }
-        return new SizeRequest(
-            new Size(widthConstraint, _tallestDetent == -1 ? heightConstraint : _tallestDetent),
-            new Size(widthConstraint, _tallestDetent == -1 ? heightConstraint : _tallestDetent)
-        );
+        return ShowAsync(window, animated);
     }
 
     public Task ShowAsync(Window window, bool animated = true)
     {
         var completionSource = new TaskCompletionSource();
-        void OnShown(object sender, EventArgs e)
+        void OnShown(object? sender, EventArgs e)
         {
             Shown -= OnShown;
             completionSource.SetResult();
@@ -108,7 +102,7 @@ public partial class BottomSheet : ContentView
     {
         _dismissOrigin = DismissOrigin.Programmatic;
         var completionSource = new TaskCompletionSource();
-        void OnDismissed(object sender, DismissOrigin origin)
+        void OnDismissed(object? sender, DismissOrigin origin)
         {
             Dismissed -= OnDismissed;
             completionSource.SetResult();
@@ -129,7 +123,7 @@ public partial class BottomSheet : ContentView
         return enabledDetents;
     }
 
-    internal Detent GetDefaultDetent()
+    internal Detent? GetDefaultDetent()
     {
         var detents = GetEnabledDetents();
         var detent = SelectedDetent;
